@@ -3,27 +3,41 @@ import 'dart:isolate';
 import 'dart:math';
 
 void main(List<String> args) {
-  File target = new File(args.first).absolute;
+  if (args.isEmpty) {
+    print('Usage: ldart <dart-script-file> [arguments...]');
+    return;
+  }
+
+  String targetPath = args.first;
+  File target = new File(targetPath).absolute;
+
+  if (!target.existsSync()) {
+    print('Target script not found: ${targetPath}');
+    return;
+  }
 
   Directory dir = target.parent;
   Directory root = findRoot(dir);
 
   if (root == null) {
-    print('Unable to locate package root.');
+    print('Unable to locate package root for file: ${targetPath}');
     return;
   }
 
   File runner = createRunner(target);
+  Link link = null;
 
-  Link link = new Link('${dir.path}/packages');
-  link.createSync('${root.path}/packages');
+  if (dir.path != root.path) {
+    link = new Link('${dir.path}/packages');
+    link.createSync('${root.path}/packages');
+  }
 
   ReceivePort port = new ReceivePort();
 
   Isolate
     .spawnUri(
       new Uri.file(runner.path),
-      [],
+      new List.from(args.getRange(1, args.length)),
       port.sendPort
       // Rather than manually creating symlinks, the idiomatic
       // approach would be to use the 'packageRoot' argument:
@@ -32,7 +46,10 @@ void main(List<String> args) {
     )
     .then((_) => port.first)
     .then((bool success) {
-      link.deleteSync();
+      if (link != null) {
+        link.deleteSync();
+      }
+
       runner.deleteSync();
     });
 }
