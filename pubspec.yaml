@@ -1,0 +1,9 @@
+name: ldart
+description: >
+  Run Dart scripts with a linked packages directory.
+version: 0.0.1
+author: Nat Burns <nbaccount@burnskids.com>
+dependencies:
+dev_dependencies:
+executables:
+  ldart:
