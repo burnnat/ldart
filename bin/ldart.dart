@@ -58,6 +58,8 @@ void main(List<String> args) {
 
     runner.deleteSync();
   }
+
+  exit(exitCode);
 }
 
 Directory findRoot(Directory start) {
