@@ -33,7 +33,6 @@ void main(List<String> args) {
   }
 
   ReceivePort port = new ReceivePort();
-  int exitCode;
 
   try {
     Isolate
@@ -48,7 +47,7 @@ void main(List<String> args) {
       )
       .then((_) => port.first)
       .then((bool success) {
-        exitCode = success ? 0 : 1;
+        exit(success ? 0 : 1);
       });
   }
   finally {
@@ -58,8 +57,6 @@ void main(List<String> args) {
 
     runner.deleteSync();
   }
-
-  exit(exitCode);
 }
 
 Directory findRoot(Directory start) {
