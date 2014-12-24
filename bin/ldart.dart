@@ -33,25 +33,31 @@ void main(List<String> args) {
   }
 
   ReceivePort port = new ReceivePort();
+  int exitCode;
 
-  Isolate
-    .spawnUri(
-      new Uri.file(runner.path),
-      new List.from(args.getRange(1, args.length)),
-      port.sendPort
-      // Rather than manually creating symlinks, the idiomatic
-      // approach would be to use the 'packageRoot' argument:
-      // packageRoot: Uri.parse('${dir.path}/packages')
-      // Unfortunately, not all platforms support this.
-    )
-    .then((_) => port.first)
-    .then((bool success) {
-      if (link != null) {
-        link.deleteSync();
-      }
+  try {
+    Isolate
+      .spawnUri(
+        new Uri.file(runner.path),
+        new List.from(args.getRange(1, args.length)),
+        port.sendPort
+        // Rather than manually creating symlinks, the idiomatic
+        // approach would be to use the 'packageRoot' argument:
+        // packageRoot: Uri.parse('${dir.path}/packages')
+        // Unfortunately, not all platforms support this.
+      )
+      .then((_) => port.first)
+      .then((bool success) {
+        exitCode = success ? 0 : 1;
+      });
+  }
+  finally {
+    if (link != null) {
+      link.deleteSync();
+    }
 
-      runner.deleteSync();
-    });
+    runner.deleteSync();
+  }
 }
 
 Directory findRoot(Directory start) {
